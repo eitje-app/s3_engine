@@ -1,29 +1,30 @@
-# S3
-Short description and motivation.
+# S3 gem
 
-## Usage
-How to use my plugin.
+Never stops lovin AWS, yay!
 
 ## Installation
+
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 's3'
-```
 
-And then execute:
+gem 's3', git: 'https://github.com/eitje-app/s3_engine', branch: 'production'
+
+```
+Create and run the required migrations:
+
 ```bash
-$ bundle
+
+$ rails s3:install:migrations
+$ rails db:migrate
+
 ```
+Add the following to your routes.rb:
+```ruby
 
-Or install it yourself as:
-```bash
-$ gem install s3
+mount s3::Engine => "/s3"
+
 ```
-
-## Contributing
-Contribution directions go here.
-
-## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-# s3_engine
+Set the following environment variables in your application:
+```ruby
+```
