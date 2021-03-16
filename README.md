@@ -22,7 +22,7 @@ $ rails db:migrate
 Add the following to your routes.rb:
 ```ruby
 
-mount s3::Engine => "/s3"
+mount S3::Engine => "/s3"
 
 ```
 Set the following environment variables in your application:
