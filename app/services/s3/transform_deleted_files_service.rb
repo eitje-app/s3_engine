@@ -3,7 +3,10 @@ require 'json'
 module S3::TransformDeletedFilesService
   class << self
 
-    def test
+    BUCKET = 'eitje-deleted-jurr'
+
+    def migrate_files
+      set_bucket
       set_path
       set_tables
       set_dates
@@ -15,9 +18,13 @@ module S3::TransformDeletedFilesService
           @table = table
           next if table == 'shifts'
           
-          create_new_file
+          compose_file
         end
       end
+    end
+
+    def set_bucket
+      @s3 = Aws::S3::Client.new
     end
 
     def set_path
@@ -29,12 +36,13 @@ module S3::TransformDeletedFilesService
     end
 
     def set_dates
-      @dates = {start_date: '2018-01-01', end_date: Date.today.strftime("%Y-%m-%d")}
+      # @dates = {start_date: '2018-01-01', end_date: Date.today.strftime("%Y-%m-%d")}
+      @dates = {start_date: '2021-03-01', end_date: Date.today.strftime("%Y-%m-%d")}
     end
 
     def set_json
-      # records = S3::OldDeletedRecordsService.get_records(env_id: 22, env_name: 'Cafe eitje', db_table: @table, **@dates)
-      records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
+      records = S3::OldDeletedRecordsService.get_records(env_id: 22, env_name: 'Cafe eitje', db_table: @table, **@dates)
+      # records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
       @json   = JSON.pretty_generate(records)
     end
 
@@ -43,10 +51,20 @@ module S3::TransformDeletedFilesService
       @file_path = "#{@path}/#{file_name}"
     end
 
-    def create_new_file
+    def compose_file
       set_json
       set_file_path 
+      
+      create_file
+      upload_file  
+    end
+
+    def create_file
       File.write(@file_path, @json)
+    end
+
+    def upload_file
+      @s3.put_object(bucket: BUCKET, key: @file_path)
     end
 
   end
