@@ -1,4 +1,4 @@
-module S3::DeletedRecordsService
+module S3::OldDeletedRecordsService
   class << self
 
    DB_TABLES = %w$ shifts teams users contracts infos posts $
