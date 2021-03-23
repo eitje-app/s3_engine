@@ -15,9 +15,7 @@ module S3::TransformDeletedFilesService
         @env = env
         
         @tables.each do |table| 
-          @table = table
-          next if table == 'shifts'
-          
+          @table = table          
           compose_file
         end
       end
@@ -37,7 +35,7 @@ module S3::TransformDeletedFilesService
 
     def set_dates
       # @dates = {start_date: '2018-01-01', end_date: Date.today.strftime("%Y-%m-%d")}
-      @dates = {start_date: '2021-03-01', end_date: Date.today.strftime("%Y-%m-%d")}
+      @dates = {start_date: '2021-01-01', end_date: Date.today.strftime("%Y-%m-%d")}
     end
 
     def set_json
@@ -47,24 +45,24 @@ module S3::TransformDeletedFilesService
     end
 
     def set_file_path
-      file_name  = "env_#{@env.id}_deleted_#{@table}.json"
-      @file_path = "#{@path}/#{file_name}"
+      @file_name = "env_#{@env.id}_deleted_#{@table}.json"
+      # @file_path = "#{@path}/#{@file_name}"
     end
 
     def compose_file
       set_json
       set_file_path 
       
-      create_file
+      # create_file
       upload_file  
     end
 
     def create_file
-      File.write(@file_path, @json)
+      # File.write(@file_path, @json)
     end
 
     def upload_file
-      @s3.put_object(bucket: BUCKET, key: @file_path)
+      @s3.put_object(bucket: BUCKET, key: @file_name, body: @json)
     end
 
   end
