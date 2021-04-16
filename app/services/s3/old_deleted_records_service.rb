@@ -34,7 +34,7 @@ module S3::OldDeletedRecordsService
         
         @file_name = file_name
         @file      = request_object 
-        filter_file_by_env
+        @db_table == 'users' ? filter_users_table_by_env : filter_file_by_env
 
       end.flatten
     end
@@ -51,6 +51,10 @@ module S3::OldDeletedRecordsService
 
     def filter_by_env_name
       @file.select { |row| row[:env] == @env_name }
+    end
+
+    def filter_users_table_by_env
+      @file.select { |row| row[:envs].include? @env_name }
     end
 
     def filter_by_date   

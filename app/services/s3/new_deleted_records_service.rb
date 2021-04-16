@@ -5,7 +5,7 @@ module S3::NewDeletedRecordsService
 
     def test(table)
       S3::NewDeletedRecordsService.get_records(
-        db_table: table, start_date: '2021-03-01', end_date: '2021-03-23', env_id: 1
+        db_table: table, start_date: '2021-03-28', end_date: '2021-04-3', env_id: 513
       )
     end
 
@@ -14,6 +14,8 @@ module S3::NewDeletedRecordsService
       @s3         = Aws::S3::Client.new 
       @db_table   = db_table
       @env_id     = env_id
+
+      binding.pry
 
       set_file_name
       validate_args

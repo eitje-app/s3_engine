@@ -34,7 +34,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_dates
-      @dates = {start_date: '2018-01-01', end_date: Date.today.strftime("%Y-%m-%d")}
+      @dates = {start_date: '2019-07-18', end_date: Date.today.strftime("%Y-%m-%d")}
     end
 
     def set_json
