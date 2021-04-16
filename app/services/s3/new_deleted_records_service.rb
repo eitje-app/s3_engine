@@ -15,8 +15,6 @@ module S3::NewDeletedRecordsService
       @db_table   = db_table
       @env_id     = env_id
 
-      binding.pry
-
       set_file_name
       validate_args
 

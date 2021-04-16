@@ -5,10 +5,14 @@ module S3::TransformDeletedFilesService
 
     BUCKET = 'eitje-deleted-jurr'
 
+    def test
+      migrate_files(start_date: '2021-04-12')
+    end
+
     def migrate_files(start_date: '2019-07-18')
       set_logger
       set_bucket
-      set_path
+      # set_path
       set_tables
       set_dates(start_date)
 
@@ -30,9 +34,9 @@ module S3::TransformDeletedFilesService
       @s3 = Aws::S3::Client.new
     end
 
-    def set_path
-      @path = Dir.glob("#{Rails.root}/app/deleted_files").first
-    end
+    # def set_path
+    #   @path = Dir.glob("#{Rails.root}/app/deleted_files").first
+    # end
 
     def set_tables
       @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
@@ -42,24 +46,41 @@ module S3::TransformDeletedFilesService
       @dates = {start_date: start_date, end_date: Date.today.strftime("%Y-%m-%d")}
     end
 
+    def set_records
+      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
+    end
+
     def set_json
-      records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
-      @json   = JSON.pretty_generate(records)
+      @json = JSON.pretty_generate(@records)
     end
 
     def set_file_name
       @file_name = "env_#{@env.id}_deleted_#{@table}.json"
+      @file_name = 'env_16_deleted_shifts.json'
+    end
+
+    def set_existing_records
+      object = @s3.get_object(bucket: BUCKET, key: @file_name)
+      @existing_records = JSON.parse(object.body.read.as_json).map(&:symbolize_keys)
+      
+      rescue Aws::S3::Errors::NoSuchKey => e
+        @existing_records = nil
     end
 
     def compose_file
-      set_json
+      set_records
       set_file_name
+      set_existing_records
+
+      (@records += @existing_records) if @existing_records
+      set_json
       upload_file  
       rescue => e
         @logger.error "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}"
     end
 
     def upload_file
+      binding.pry
       @s3.put_object(bucket: BUCKET, key: @file_name, body: @json)
     end
 
