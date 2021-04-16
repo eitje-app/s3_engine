@@ -39,6 +39,3 @@ Add the following to your routes.rb:
 mount S3::Engine => "/s3"
 
 ```
-Set the following environment variables in your application:
-```ruby
-```
