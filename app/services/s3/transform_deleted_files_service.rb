@@ -5,11 +5,12 @@ module S3::TransformDeletedFilesService
 
     BUCKET = 'eitje-deleted-jurr'
 
-    def migrate_files
+    def migrate_files(start_date: '2019-07-18')
+      set_logger
       set_bucket
       set_path
       set_tables
-      set_dates
+      set_dates(start_date)
 
       Environment.find_each do |env|
         @env = env
@@ -19,6 +20,10 @@ module S3::TransformDeletedFilesService
           compose_file
         end
       end
+    end
+
+    def set_logger
+      @logger = Logger.new "log/migrate_deleted_records_#{DateTime.now.strftime('%Y_%M_%d_%H:%M:%S')}.log"
     end
 
     def set_bucket
@@ -33,8 +38,8 @@ module S3::TransformDeletedFilesService
       @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
     end
 
-    def set_dates
-      @dates = {start_date: '2019-07-18', end_date: Date.today.strftime("%Y-%m-%d")}
+    def set_dates(start_date)
+      @dates = {start_date: start_date, end_date: Date.today.strftime("%Y-%m-%d")}
     end
 
     def set_json
@@ -50,6 +55,8 @@ module S3::TransformDeletedFilesService
       set_json
       set_file_name
       upload_file  
+      rescue => e
+        @logger.error "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}"
     end
 
     def upload_file
