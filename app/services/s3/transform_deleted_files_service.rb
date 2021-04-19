@@ -6,13 +6,12 @@ module S3::TransformDeletedFilesService
     BUCKET = 'eitje-deleted-jurr'
 
     def test
-      migrate_files(start_date: '2021-04-12')
+      migrate_files(start_date: '2021-03-01')
     end
 
     def migrate_files(start_date: '2019-07-18')
       set_logger
       set_bucket
-      # set_path
       set_tables
       set_dates(start_date)
 
@@ -34,10 +33,6 @@ module S3::TransformDeletedFilesService
       @s3 = Aws::S3::Client.new
     end
 
-    # def set_path
-    #   @path = Dir.glob("#{Rails.root}/app/deleted_files").first
-    # end
-
     def set_tables
       @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
     end
@@ -56,7 +51,6 @@ module S3::TransformDeletedFilesService
 
     def set_file_name
       @file_name = "env_#{@env.id}_deleted_#{@table}.json"
-      @file_name = 'env_16_deleted_shifts.json'
     end
 
     def set_existing_records
