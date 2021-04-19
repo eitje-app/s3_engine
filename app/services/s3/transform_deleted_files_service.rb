@@ -15,7 +15,6 @@ module S3::TransformDeletedFilesService
       set_tables
       set_dates(start_date)
 
-      binding.pry
       Environment.find_each do |env|
         @env = env
         
@@ -75,7 +74,6 @@ module S3::TransformDeletedFilesService
     end
 
     def upload_file
-      binding.pry
       @s3.put_object(bucket: BUCKET, key: @file_name, body: @json)
     end
 
