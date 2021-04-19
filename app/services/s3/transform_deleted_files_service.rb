@@ -15,6 +15,7 @@ module S3::TransformDeletedFilesService
       set_tables
       set_dates(start_date)
 
+      binding.pry
       Environment.find_each do |env|
         @env = env
         
