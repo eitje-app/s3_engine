@@ -10,6 +10,8 @@ module S3::TransformDeletedFilesService
     end
 
     def migrate_files(start_date: '2019-07-18')
+      @start_date = start_date
+
       set_logger
       set_bucket
       set_tables
@@ -26,7 +28,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_logger
-      @logger = Logger.new "log/migrate_deleted_records_#{DateTime.now.strftime('%Y_%M_%d_%H:%M:%S')}.log"
+      @logger = Logger.new "log/migrate_deleted_records_#{DateTime.now.strftime('%Y_%m_%d_%H:%M:%S')}.log"
     end
 
     def set_bucket
@@ -38,7 +40,12 @@ module S3::TransformDeletedFilesService
     end
 
     def set_dates(start_date)
-      @dates = {start_date: start_date, end_date: Date.today.strftime("%Y-%m-%d")}
+      format_start_date
+      @dates = {start_date: @start_date, end_date: Date.today.strftime("%Y-%m-%d")}
+    end
+
+    def format_start_date
+      @start_date = @start_date.class == String ? @start_date : @start_date.strftime("%Y-%m-%d")
     end
 
     def set_records
@@ -70,7 +77,7 @@ module S3::TransformDeletedFilesService
       set_json
       upload_file  
       rescue => e
-        @logger.error "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}"
+        @logger.error "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}.\n\nBacktrace:#{e.backtrace}\n"
     end
 
     def upload_file
