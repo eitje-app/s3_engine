@@ -51,7 +51,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_records
-      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
+      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: 'verlofverzoeks', **@dates)
     end
 
     def set_json

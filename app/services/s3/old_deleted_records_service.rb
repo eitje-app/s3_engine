@@ -23,9 +23,9 @@ module S3::OldDeletedRecordsService
 
     # validations
 
-    def validate_args(db_table)
-      throw :db_table_name_is_not_valid unless DB_TABLES.include?(db_table)
-    end
+    # def validate_args(db_table)
+    #   throw :db_table_name_is_not_valid unless DB_TABLES.include?(db_table)
+    # end
 
     # base method
 
