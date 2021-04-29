@@ -3,9 +3,11 @@ module S3::OldDeletedRecordsService
 
    DB_TABLES = %w$ shifts teams users contracts infos posts $
 
+   # S3::OldDeletedRecordsService.get_records(env_id: 307, env_name: 'Kua - Den Haag', db_table: 'verlofverzoeks', start_date: '2021-02-01', end_date: '2021-04-01')
+
     def get_records(db_table:, start_date:, end_date:, env_id:, env_name:)
 
-      validate_args(db_table)
+      # validate_args(db_table)
       
       @start_date = start_date
       @end_date   = end_date
@@ -23,9 +25,9 @@ module S3::OldDeletedRecordsService
 
     # validations
 
-    # def validate_args(db_table)
-    #   throw :db_table_name_is_not_valid unless DB_TABLES.include?(db_table)
-    # end
+    def validate_args(db_table)
+      throw :db_table_name_is_not_valid unless DB_TABLES.include?(db_table)
+    end
 
     # base method
 
