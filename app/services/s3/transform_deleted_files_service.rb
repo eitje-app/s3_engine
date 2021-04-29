@@ -3,7 +3,8 @@ require 'json'
 module S3::TransformDeletedFilesService
   class << self
 
-    BUCKET = 'eitje-deleted-jurr'
+    # BUCKET = 'eitje-deleted-jurr'
+    BUCKET = 'eitje-deleted-jurr-2'
 
     def test
       migrate_files(start_date: '2021-03-01')
@@ -36,7 +37,8 @@ module S3::TransformDeletedFilesService
     end
 
     def set_tables
-      @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
+      # @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
+      @tables = ['verlof_verzoeken']
     end
 
     def set_dates(start_date)
