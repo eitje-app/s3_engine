@@ -32,8 +32,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_tables
-      # @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
-      @tables = ['verlof_verzoeken']
+      @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
     end
 
     def set_dates(start_date)
@@ -46,7 +45,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_records
-      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: 'verlofverzoeks', **@dates)
+      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
     end
 
     def set_json
