@@ -5,7 +5,7 @@ module S3::NewDeletedRecordsService
 
     def test(table)
       S3::NewDeletedRecordsService.get_records(
-        db_table: table, start_date: '2021-03-01', end_date: '2021-03-23', env_id: 1
+        db_table: table, start_date: '2021-03-28', end_date: '2021-04-3', env_id: 513
       )
     end
 

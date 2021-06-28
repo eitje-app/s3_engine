@@ -3,9 +3,11 @@ module S3::OldDeletedRecordsService
 
    DB_TABLES = %w$ shifts teams users contracts infos posts $
 
+   # S3::OldDeletedRecordsService.get_records(env_id: 307, env_name: 'Kua - Den Haag', db_table: 'verlofverzoeks', start_date: '2021-02-01', end_date: '2021-04-01')
+
     def get_records(db_table:, start_date:, end_date:, env_id:, env_name:)
 
-      validate_args(db_table)
+      # validate_args(db_table)
       
       @start_date = start_date
       @end_date   = end_date
@@ -34,7 +36,7 @@ module S3::OldDeletedRecordsService
         
         @file_name = file_name
         @file      = request_object 
-        filter_file_by_env
+        @db_table == 'users' ? filter_users_table_by_env : filter_file_by_env
 
       end.flatten
     end
@@ -51,6 +53,10 @@ module S3::OldDeletedRecordsService
 
     def filter_by_env_name
       @file.select { |row| row[:env] == @env_name }
+    end
+
+    def filter_users_table_by_env
+      @file.select { |row| row[:envs].include? @env_name }
     end
 
     def filter_by_date   
