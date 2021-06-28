@@ -13,9 +13,24 @@ module S3::TransformDeletedFilesService
       set_dates(start_date)
     end
 
-    def migrate_files(start_date: Date.yesterday)
+    def migrate_files(start_date: Date.today)
       set_setters(start_date)
-      Environment.in_use.find_each { |env| migrate_files_single_env(env.id, start_date: start_date, skip_setters: true) }
+
+      s3 = Aws::S3::Client.new
+      envs_to_migrate = []
+
+      set_tables.each do |table|  
+        object  = s3.get_object(bucket: 'eitje-backups', key: "#{table}/#{start_date.strftime("%Y-%m-%d")}.json")
+        json    = JSON.parse(object.body.read.as_json).map(&:symbolize_keys)
+        env_ids = json.map {|row| row[:env]}.uniq.map { |name| Environment.find_by(naam: name)&.id }
+        envs_to_migrate << env_ids
+      rescue 
+        # in case the file does not exist on S3, cause there are no deleted 
+        # records, skip to next table
+        next
+      end
+      
+      envs_to_migrate.flatten.uniq.each { |env_id| migrate_files_single_env(env_id, start_date: start_date, skip_setters: true) }
     end
 
     def migrate_files_single_env(environment_id, start_date: Date.yesterday, skip_setters: false)
