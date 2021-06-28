@@ -2,7 +2,7 @@ require_relative "lib/s3/version"
 
 Gem::Specification.new do |spec|
   
-  spec.name        = "s3"
+  spec.name        = "eitje_s3"
   spec.version     = S3::VERSION
 
   spec.authors     = ["Jurriaan Schrofer"]
