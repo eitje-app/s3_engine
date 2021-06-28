@@ -5,22 +5,36 @@ module S3::TransformDeletedFilesService
 
     BUCKET = 'eitje-deleted-jurr-2'
 
-    def migrate_files(start_date: '2019-07-18')
+    def set_setters(start_date = Date.yesterday)
       @start_date = start_date
-
       set_logger
       set_bucket
       set_tables
       set_dates(start_date)
+    end
 
-      Environment.in_use.find_each do |env|
-        @env = env
-        
-        @tables.each do |table| 
-          @table = table          
-          compose_file
-        end
+    def migrate_files(start_date: Date.yesterday)
+      set_setters(start_date)
+      Environment.in_use.find_each { |env| migrate_files_single_env(env.id, start_date: start_date, skip_setters: true) }
+    end
+
+    def migrate_files_single_env(environment_id, start_date: Date.yesterday, skip_setters: false)
+      set_setters(start_date) unless skip_setters
+      @env = Environment.find(environment_id)
+      @tables.each do |table| 
+        @table = table          
+        compose_file
       end
+    end
+
+    def migrate_files_multi_env(environment_ids, start_date: Date.yesterday)
+      set_setters(start_date)
+      environment_ids.each { |id| migrate_files_single_env(id, start_date: start_date, skip_setters: true) }
+    end
+
+    def migrate_files_single_org(organisation_id, start_date: Date.yesterday)
+      env_ids = Organisation.find(organisation_id).environment_ids
+      migrate_files_multi_env(env_ids, start_date: start_date)
     end
 
     def set_logger
