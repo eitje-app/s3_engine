@@ -3,12 +3,7 @@ require 'json'
 module S3::TransformDeletedFilesService
   class << self
 
-    # BUCKET = 'eitje-deleted-jurr'
     BUCKET = 'eitje-deleted-jurr-2'
-
-    def test
-      migrate_files(start_date: '2021-03-01')
-    end
 
     def migrate_files(start_date: '2019-07-18')
       @start_date = start_date
