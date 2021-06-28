@@ -5,22 +5,51 @@ module S3::TransformDeletedFilesService
 
     BUCKET = 'eitje-deleted-jurr-2'
 
-    def migrate_files(start_date: '2019-07-18')
+    def set_setters(start_date = Date.yesterday)
       @start_date = start_date
-
       set_logger
       set_bucket
       set_tables
       set_dates(start_date)
+    end
 
-      Environment.find_each do |env|
-        @env = env
-        
-        @tables.each do |table| 
-          @table = table          
-          compose_file
-        end
+    def migrate_files(start_date: Date.today)
+      set_setters(start_date)
+
+      s3 = Aws::S3::Client.new
+      envs_to_migrate = []
+
+      set_tables.each do |table|  
+        object  = s3.get_object(bucket: 'eitje-backups', key: "#{table}/#{start_date.strftime("%Y-%m-%d")}.json")
+        json    = JSON.parse(object.body.read.as_json).map(&:symbolize_keys)
+        env_ids = json.map {|row| row[:env]}.uniq.map { |name| Environment.find_by(naam: name)&.id }
+        envs_to_migrate << env_ids
+      rescue 
+        # in case the file does not exist on S3, cause there are no deleted 
+        # records, skip to next table
+        next
       end
+      
+      envs_to_migrate.flatten.uniq.each { |env_id| migrate_files_single_env(env_id, start_date: start_date, skip_setters: true) }
+    end
+
+    def migrate_files_single_env(environment_id, start_date: Date.yesterday, skip_setters: false)
+      set_setters(start_date) unless skip_setters
+      @env = Environment.find(environment_id)
+      @tables.each do |table| 
+        @table = table          
+        compose_file
+      end
+    end
+
+    def migrate_files_multi_env(environment_ids, start_date: Date.yesterday)
+      set_setters(start_date)
+      environment_ids.each { |id| migrate_files_single_env(id, start_date: start_date, skip_setters: true) }
+    end
+
+    def migrate_files_single_org(organisation_id, start_date: Date.yesterday)
+      env_ids = Organisation.find(organisation_id).environment_ids
+      migrate_files_multi_env(env_ids, start_date: start_date)
     end
 
     def set_logger
@@ -32,8 +61,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_tables
-      # @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
-      @tables = ['verlof_verzoeken']
+      @tables = S3::OldDeletedRecordsService::singleton_class::DB_TABLES
     end
 
     def set_dates(start_date)
@@ -46,7 +74,7 @@ module S3::TransformDeletedFilesService
     end
 
     def set_records
-      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: 'verlofverzoeks', **@dates)
+      @records = S3::OldDeletedRecordsService.get_records(env_id: @env.id, env_name: @env.naam, db_table: @table, **@dates)
     end
 
     def set_json
