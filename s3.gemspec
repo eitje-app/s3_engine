@@ -13,10 +13,10 @@ Gem::Specification.new do |spec|
 
   spec.license     = "MIT"
 
-  spec.homepage                    = "https://eitje.app"
+  spec.homepage                    = "https://github.com/eitje-app/s3_engine"
   spec.metadata["homepage_uri"]    = spec.homepage
-  spec.metadata["source_code_uri"] = "https://eitje.app"
-  spec.metadata["changelog_uri"]   = "https://eitje.app"
+  spec.metadata["source_code_uri"] = "https://github.com/eitje-app/s3_engine"
+  spec.metadata["changelog_uri"]   = "https://github.com/eitje-app/s3_engine"
 
   spec.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
