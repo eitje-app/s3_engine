@@ -1,11 +1,11 @@
 module S3::NewDeletedRecordsService
   class << self
 
-   DB_TABLES = %w$ shifts teams users contracts infos posts $
+   DB_TABLES = %w$ shifts teams users contracts infos posts topics $
 
-    def test(table)
+    def test(table, env_id=22, start_date='2021-07-20', end_date='2021-07-22')
       S3::NewDeletedRecordsService.get_records(
-        db_table: table, start_date: '2021-03-28', end_date: '2021-04-3', env_id: 513
+        db_table: table, start_date: start_date, end_date: end_date, env_id: env_id
       )
     end
 
@@ -32,7 +32,13 @@ module S3::NewDeletedRecordsService
     end
 
     def query_records    
-      file     = @s3.get_object(bucket: 'eitje-deleted-jurr', key: @file_name)
+
+      # Previously (before adding 'topics') the request bucket was 'eitje-deleted-jurr'
+      # but somehow topics break if we dont request the bucket '-2'. Now for other tables
+      # the original returns waaaaay many records, so probably does not filter by date or
+      # something. Change for now and investigate if shit goes BG.
+
+      file     = @s3.get_object(bucket: 'eitje-deleted-jurr-2', key: @file_name)
       @records = JSON.parse(file.body.read.as_json).map(&:symbolize_keys)
     end
 
