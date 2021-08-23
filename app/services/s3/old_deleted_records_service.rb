@@ -1,10 +1,7 @@
 module S3::OldDeletedRecordsService
   class << self
 
-   # DB_TABLES = %w$ shifts teams users contracts infos posts topics $
-   DB_TABLES = %w$ topics $
-
-   # S3::OldDeletedRecordsService.get_records(env_id: 307, env_name: 'Kua - Den Haag', db_table: 'verlofverzoeks', start_date: '2021-02-01', end_date: '2021-04-01')
+   DB_TABLES = %w$ shifts teams users contracts infos posts topics $
 
     def get_records(db_table:, start_date:, end_date:, env_id:, env_name:)
 

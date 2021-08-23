@@ -3,12 +3,6 @@ module S3::NewDeletedRecordsService
 
    DB_TABLES = %w$ shifts teams users contracts infos posts topics $
 
-    def test(table, env_id=22, start_date='2021-07-20', end_date='2021-07-22')
-      S3::NewDeletedRecordsService.get_records(
-        db_table: table, start_date: start_date, end_date: end_date, env_id: env_id
-      )
-    end
-
     def get_records(db_table:, start_date:, end_date:, env_id:)    
       @date_range = Date.parse(start_date)..Date.parse(end_date)
       @s3         = Aws::S3::Client.new 
