@@ -1,7 +1,7 @@
 module S3::NewDeletedRecordsService
   class << self
 
-   DB_TABLES = %w$ shifts teams users contracts infos posts topics $
+   DB_TABLES = %w$ shifts teams users contracts infos posts topics verlof_verzoeken$
 
     def get_records(db_table:, start_date:, end_date:, env_id:)    
       @date_range = Date.parse(start_date)..Date.parse(end_date)
@@ -47,3 +47,12 @@ module S3::NewDeletedRecordsService
 
   end
 end
+
+__END__
+
+env_id = 22
+db_table = "verlof_verzoeken"
+start_date = (Date.today - 5.days).to_s
+end_date = (Date.today).to_s
+
+records = S3::NewDeletedRecordsService.get_records(db_table: db_table, start_date: start_date, end_date: end_date, env_id: env_id)
