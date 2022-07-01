@@ -32,8 +32,12 @@ module S3::NewDeletedRecordsService
       # the original returns waaaaay many records, so probably does not filter by date or
       # something. Change for now and investigate if shit goes BG.
 
-      file     = @s3.get_object(bucket: 'eitje-deleted-jurr-2', key: @file_name)
-      @records = JSON.parse(file.body.read.as_json).map(&:symbolize_keys)
+      begin
+        file = @s3.get_object(bucket: 'eitje-deleted-jurr-2', key: @file_name)
+        @records = JSON.parse(file.body.read.as_json).map(&:symbolize_keys)
+      rescue Aws::S3::Errors::NoSuchKey
+        @records = [] # files are only generated when an env has some deleted envs, through by uploading them old-style first
+      end
     end
 
     def filter_records
@@ -50,9 +54,11 @@ end
 
 __END__
 
-env_id = 22
-db_table = "verlof_verzoeken"
-start_date = (Date.today - 5.days).to_s
-end_date = (Date.today).to_s
+def show_env(env_id, db_table = "verlof_verzoeken")
+  start_date = (Date.today - 1.years).to_s
+  end_date = (Date.today).to_s
+  records = S3::NewDeletedRecordsService.get_records(db_table: db_table, start_date: start_date, end_date: end_date, env_id: env_id)
+end
 
-records = S3::NewDeletedRecordsService.get_records(db_table: db_table, start_date: start_date, end_date: end_date, env_id: env_id)
+show_env(1176)
+show_env(1176, "verlof_verzoeken")

@@ -89,8 +89,11 @@ module S3::OldDeletedRecordsService
     # AWS methods
 
     def request_object_names
+      folder = @db_table
+      folder = "verlofverzoeks" if @db_table == "verlof_verzoeken"
+
       s3      = Aws::S3::Client.new
-      objects = s3.list_objects(bucket: 'eitje-backups', prefix: @db_table).contents
+      objects = s3.list_objects(bucket: 'eitje-backups', prefix: folder).contents
       names   = objects.collect &:key
     end
 

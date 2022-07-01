@@ -20,7 +20,13 @@ module S3::TransformDeletedFilesService
       envs_to_migrate = []
 
       set_tables.each do |table|  
-        object  = s3.get_object(bucket: 'eitje-backups', key: "#{table}/#{start_date.strftime("%Y-%m-%d")}.json")
+
+        folder = table
+        folder = "verlofverzoeks" if table == "verlof_verzoeken"
+
+        puts "requesting #{table} on #{start_date.strftime("%Y-%m-%d")}..."
+
+        object  = s3.get_object(bucket: 'eitje-backups', key: "#{folder}/#{start_date.strftime("%Y-%m-%d")}.json")
         json    = JSON.parse(object.body.read.as_json).map(&:symbolize_keys)
         
         if table == 'topics'
@@ -30,10 +36,11 @@ module S3::TransformDeletedFilesService
         end
 
         envs_to_migrate << env_ids
-      rescue => e
+      rescue Aws::S3::Errors::NoSuchKey => e
         # in case the file does not exist on S3, cause there are no deleted 
         # records, skip to next table
-        next
+        puts "no records found for #{table} on #{start_date.strftime("%Y-%m-%d")}!"
+        []
       end
 
       envs_to_migrate = envs_to_migrate.flatten.uniq.compact
@@ -106,12 +113,14 @@ module S3::TransformDeletedFilesService
       set_file_name
       set_existing_records
 
-      (@records += @existing_records) if @existing_records
+      @records = (@records | @existing_records) if @existing_records
       set_json
       upload_file
 
       rescue => e
-        @logger.error "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}.\n\nBacktrace:#{e.backtrace}\n"
+        message = "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}.\n\nBacktrace:#{e.backtrace}\n"
+        puts message
+        @logger.error message
     end
 
     def upload_file
