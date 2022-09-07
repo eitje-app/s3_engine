@@ -34,6 +34,8 @@ module S3::OldDeletedRecordsService
         @file_name = file_name
         @file      = request_object 
 
+        next unless @file
+
         case @db_table
         when 'users'
           filter_users_table_by_env
@@ -43,7 +45,7 @@ module S3::OldDeletedRecordsService
           filter_file_by_env
         end
 
-      end.flatten
+      end.flatten.compact
     end
 
     # filter methods
@@ -93,14 +95,24 @@ module S3::OldDeletedRecordsService
       folder = "verlofverzoeks" if @db_table == "verlof_verzoeken"
 
       s3      = Aws::S3::Client.new
-      objects = s3.list_objects(bucket: 'eitje-backups', prefix: folder).contents
-      names   = objects.collect &:key
+
+      objects = []
+
+      # Pagination: AWS returns 1000 items at max
+      s3.list_objects(bucket: 'eitje-backups', prefix: folder).each do |response|
+        objects += response.contents
+      end
+
+      names = objects.collect &:key
     end
 
     def request_object
       s3     = Aws::S3::Client.new
       object = s3.get_object(bucket: 'eitje-backups', key: @file_name)
-      json   = JSON.parse(object.body.read.as_json).map(&:symbolize_keys)
+      body   = object.body.read.as_json
+      json   = JSON.parse(body).map(&:symbolize_keys)
+      rescue JSON::ParserError => e
+        puts "Invalid file... skip this file"
     end
 
   end

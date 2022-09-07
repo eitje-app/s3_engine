@@ -32,7 +32,12 @@ module S3::TransformDeletedFilesService
         if table == 'topics'
           env_ids = json.map {|row| row[:environment_ids]}.flatten.compact.uniq
         else
-          env_ids = json.map {|row| row[:env]}.uniq.map { |name| Environment.find_by(naam: name)&.id }
+          puts "new table logic...?"
+          env_ids = json.map { _1[:environment_id] }.compact.uniq
+
+          unless env_ids.present?
+            env_ids = json.map {|row| row[:env]}.uniq.map { |name| Environment.find_by(naam: name)&.id }
+          end
         end
 
         envs_to_migrate << env_ids
@@ -55,6 +60,11 @@ module S3::TransformDeletedFilesService
         @table = table          
         compose_file
       end
+
+    rescue ActiveRecord::RecordNotFound => e
+
+    rescue => e
+      binding.pry
     end
 
     def migrate_files_multi_env(environment_ids, start_date: Date.yesterday)
@@ -105,6 +115,7 @@ module S3::TransformDeletedFilesService
       @existing_records = JSON.parse(object.body.read.as_json).map(&:symbolize_keys)
       
       rescue Aws::S3::Errors::NoSuchKey => e
+        binding.pry
         @existing_records = nil
     end
 
@@ -115,11 +126,13 @@ module S3::TransformDeletedFilesService
 
       @records = (@records | @existing_records) if @existing_records
       set_json
+      puts "completed successfully! new total: #{@records&.count}, old total: #{@existing_records&.count}"
       upload_file
 
       rescue => e
         message = "Error for env #{@env.naam} (##{@env.id}) with table '#{@table}' => #{e.class}: #{e.message}.\n\nBacktrace:#{e.backtrace}\n"
         puts message
+        binding.pry
         @logger.error message
     end
 
